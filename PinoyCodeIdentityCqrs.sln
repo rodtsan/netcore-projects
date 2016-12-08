@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "test", "test\test.xproj", "{7F476F1C-67CD-4C20-B700-594E9089EE5F}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PinoyCode.Cqrs", "lib\PinoyCode.Cqrs\PinoyCode.Cqrs.xproj", "{E8E02981-0866-4E7B-A2CA-A50D62D02523}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "PinoyCode.Data", "lib\PinoyCode.Data\PinoyCode.Data.xproj", "{DA1F4355-8145-4275-B8F5-05B29228A991}"
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7F476F1C-67CD-4C20-B700-594E9089EE5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7F476F1C-67CD-4C20-B700-594E9089EE5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7F476F1C-67CD-4C20-B700-594E9089EE5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7F476F1C-67CD-4C20-B700-594E9089EE5F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E8E02981-0866-4E7B-A2CA-A50D62D02523}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E8E02981-0866-4E7B-A2CA-A50D62D02523}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8E02981-0866-4E7B-A2CA-A50D62D02523}.Release|Any CPU.ActiveCfg = Release|Any CPU
