@@ -8,12 +8,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace PinoyCode.Domain.Identity
 {
-    public sealed class IdentityDbContext : IdentityDbContext<User, Role, Guid>
+    public sealed class ApplicationIdentityDbContext : IdentityDbContext<User, Role, Guid>
     {
-        public IdentityDbContext(DbContextOptions<IdentityDbContext> options)
+        public ApplicationIdentityDbContext(DbContextOptions<ApplicationIdentityDbContext> options)
             : base(options)
         {
+           
+        }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=aspnet-PinoyCode.Web-2fbb4adb-c3ce-4ce5-bca3-575e4c4e0f94;Trusted_Connection=True;MultipleActiveResultSets=true");
+
+            base.OnConfiguring(optionsBuilder);
         }
         protected override void OnModelCreating(ModelBuilder builder)
         {
