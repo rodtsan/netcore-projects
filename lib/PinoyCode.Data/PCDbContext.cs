@@ -7,31 +7,62 @@ using System;
 
 namespace PinoyCode.Data
 {
+    //public delegate void ModelCreatingHandler(ModelBuilder builder);
+    //public class PCDbContext : DbContextBase<DbContext>, IDbContext
+    //{
+    //    public event ModelCreatingHandler OnModelCreated;
+    //    public PCDbContext(DbContextOptions<DbContext> options)
+    //        : base(options)
+    //    {
+
+    //    }
+
+    //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //    {
+
+    //        base.OnConfiguring(optionsBuilder);
+    //    }
+
+    //    protected override void OnModelCreating(ModelBuilder builder)
+    //    {
+    //        this.OnModelCreated?.Invoke(builder);
+
+    //        base.OnModelCreating(builder);
+    //        // Customize the ASP.NET Identity model and override the defaults if needed.
+    //        // For example, you can rename the ASP.NET Identity table names and more.
+    //        // Add your customizations after calling base.OnModelCreating(builder);
+    //    }
+
+    //}
+
     public delegate void ModelCreatingHandler(ModelBuilder builder);
-    public class PCDbContext : DbContext, IDbContext
-     {
+    public class DbContextBase : DbContext, IDbContext
+    {
         public event ModelCreatingHandler OnModelCreated;
-        public PCDbContext(DbContextOptions<PCDbContext> options)
-             : base(options)
+        public DbSet<Profile> Profiles { get; set; }
+
+        public DbContextBase(DbContextOptions<DbContextBase> options)
+            :base(options)
         {
-            
+
         }
 
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            this.OnModelCreated?.Invoke(modelBuilder);
 
-            base.OnConfiguring(optionsBuilder);
-        }
+            modelBuilder.Entity<Profile>(t =>
+            {
+                t.Property(p => p.Id).ValueGeneratedOnAdd();
+                t.Property(p => p.Name);
+                t.Property(p => p.RegisteredOn);
+                t.HasKey(p => p.Id);
+                t.ToTable("Profiles");
+            });
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            this.OnModelCreated?.Invoke(builder);
+            base.OnModelCreating(modelBuilder);
 
-            base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names and more.
-            // Add your customizations after calling base.OnModelCreating(builder);
+           
         }
 
         public int Commit()
