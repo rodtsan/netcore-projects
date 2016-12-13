@@ -5,6 +5,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Xml.Serialization;
 using CqrsModels = PinoyCode.Cqrs.Models;
 
@@ -19,17 +20,17 @@ namespace PinoyCode.Cqrs
         private readonly IDbContext _context;
         public SqlEventStore(IDbContext context)
         {
-            this._context = context;
+            _context = context;
         }
 
         public IEnumerable LoadEventsFor<TAggregate>(Guid id)
         {
-            yield return  this.Events.Where(p => p.AggregateId == id)
-                .OrderBy(o => o.SequenceNumber)
-                .ForEachAsync(evt =>
-                {
-                    DeserializeEvent(evt.Type, evt.Body);
-                });
+            foreach (var evt in this.Events.Where(p => p.AggregateId == id)
+                .OrderBy(o => o.SequenceNumber))
+            {
+                yield return DeserializeEvent(evt.Type, evt.Body);
+            }
+
         }
 
         private object DeserializeEvent(string typeName, string data)
@@ -57,6 +58,7 @@ namespace PinoyCode.Cqrs
                 eventsLoaded = eventsLoaded + i;
                 this.Events.Add(new CqrsModels.Event
                 {
+                    Id = Guid.NewGuid(),
                     AggregateId = aggregateId.Value,
                     SequenceNumber = eventsLoaded,
                     Type = e.GetType().AssemblyQualifiedName,
@@ -90,6 +92,14 @@ namespace PinoyCode.Cqrs
             get
             {
                 return _context.Table<CqrsModels.Event>();
+            }
+        }
+
+        public IDbContext Context
+        {
+            get
+            {
+                return _context;
             }
         }
     }

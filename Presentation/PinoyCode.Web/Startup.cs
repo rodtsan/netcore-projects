@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using CqrsModels = PinoyCode.Cqrs.Models;
-using PinoyCode.Data;
+using PinoyCode.Cqrs;
+using PinoyCode.Data.Infrustracture;
+using PinoyCode.Domain.Ads;
 using PinoyCode.Domain.Identity;
 using PinoyCode.Domain.Identity.Models;
 using PinoyCode.Web.Services;
 using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace PinoyCode.Web
 {
@@ -45,12 +45,10 @@ namespace PinoyCode.Web
             services.AddApplicationInsightsTelemetry(Configuration);
 
             services.AddEntityFrameworkSqlServer()
-                  .AddDbContext<ApplicationIdentityDbContext>(options =>
+                    .AddDbContext<AdsDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                     c => c.MigrationsAssembly("PinoyCode.Web")))
-                   .AddDbContext<DbContextBase>(options =>
-                     options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"), 
-                     c => c.MigrationsAssembly("PinoyCode.Web")));
+                     c => c.MigrationsAssembly("PinoyCode.Web"))
+                    , ServiceLifetime.Scoped);
 
             services.AddIdentity<User, Role>(options => {
                     options.Password.RequireUppercase = false;
@@ -58,18 +56,25 @@ namespace PinoyCode.Web
                     options.Password.RequireNonAlphanumeric = false;
                     options.Password.RequireDigit = false;
                 })
-                .AddEntityFrameworkStores<ApplicationIdentityDbContext, Guid>()
+                .AddEntityFrameworkStores<AdsDbContext, Guid>()
                 .AddDefaultTokenProviders();
 
             services.AddMvc();
 
-           
+
             // Add application services.
+            services.AddTransient<IDbContext, AdsDbContext>();
+            services.AddTransient<IEventStore, SqlEventStore>();
+            services.AddTransient<IMessageDispatcher , MessageDispatcher>();
+            
+       
             services.AddTransient<IUserManager, UserManager>();
             services.AddTransient<ISignInManager, SignInManager>();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
+
+       
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -78,59 +83,25 @@ namespace PinoyCode.Web
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            app.UseApplicationInsightsRequestTelemetry();
 
-            using (var db = app.ApplicationServices.GetService<DbContextBase>())
-            {
-                db.OnModelCreated += (ModelBuilder b) =>
+          
+            //app.ApplicationServices.GetRequiredService<IMessageDispatcher>()
+            //    .ScanInstance(new IdentityAggregate {
+            //         ServiceProvider = app.ApplicationServices
+            //    });
+                
+
+                if (env.IsDevelopment())
                 {
-                    // Add mapping tables
-                    b.Entity<CqrsModels.Aggregate>(t =>
-                    {
-                        t.Property(p => p.Id)
-                           .IsRequired();
-                        t.Property(p => p.AggregateType);
-                        t.Property(p => p.CommitDateTime);
-                        t.HasKey(p => p.Id);
-                        t.HasMany(p => p.Events)
-                          .WithOne()
-                          .HasForeignKey(p => p.AggregateId)
-                          .OnDelete(DeleteBehavior.Cascade);
-                        t.ToTable("Aggregates");
-                    });
-
-                    b.Entity<CqrsModels.Event>(t =>
-                    {
-                        t.Property(p => p.Id)
-                           .IsRequired();
-                        t.Property(p => p.AggregateId);
-                        t.Property(p => p.CommitDateTime);
-                        t.Property(p => p.SequenceNumber);
-                        t.Property(p => p.Type);
-                        t.Property(p => p.Body);
-                        t.HasKey(p => p.Id);
-                        t.HasIndex(p => p.AggregateId);
-                        t.HasOne(p => p.Aggregate)
-                          .WithMany()
-                          .HasForeignKey(p => p.AggregateId)
-                          .OnDelete(DeleteBehavior.Cascade);
-                       
-                        t.ToTable("Events");
-                    });
-                };
-            }
-
-                app.UseApplicationInsightsRequestTelemetry();
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
-                app.UseBrowserLink();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-            }
+                    app.UseDeveloperExceptionPage();
+                    app.UseDatabaseErrorPage();
+                    app.UseBrowserLink();
+                }
+                else
+                {
+                    app.UseExceptionHandler("/Home/Error");
+                }
 
             app.UseApplicationInsightsExceptionTelemetry();
 

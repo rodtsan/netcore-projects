@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using System.Reflection;
 using EventStore.ClientAPI;
 using System.Threading.Tasks;
+using PinoyCode.Data.Infrustracture;
 
 namespace PinoyCode.Cqrs
 {
@@ -17,6 +18,7 @@ namespace PinoyCode.Cqrs
     {
         private IEventStoreConnection conn = EventStoreConnection
             .Create(new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1113));
+
 
         public ESEventStore()
         {
@@ -85,6 +87,14 @@ namespace PinoyCode.Cqrs
             ser.Serialize(ms, obj);
             ms.Seek(0, SeekOrigin.Begin);
             return ms.ToArray();
+        }
+
+        public IDbContext Context
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

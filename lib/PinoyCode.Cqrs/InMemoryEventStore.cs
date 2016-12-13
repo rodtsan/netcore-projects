@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Reflection;
-
+using PinoyCode.Data.Infrustracture;
 
 namespace PinoyCode.Cqrs
 {
@@ -16,6 +16,14 @@ namespace PinoyCode.Cqrs
 
         private ConcurrentDictionary<Guid, Stream> store =
             new ConcurrentDictionary<Guid, Stream>();
+
+        public IDbContext Context
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public IEnumerable LoadEventsFor<TAggregate>(Guid id)
         {

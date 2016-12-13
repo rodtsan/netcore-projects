@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using System.Reflection;
+using PinoyCode.Data.Infrustracture;
 
 namespace PinoyCode.Cqrs
 {
@@ -11,8 +12,13 @@ namespace PinoyCode.Cqrs
     /// Aggregate base class, which factors out some common infrastructure that
     /// all aggregates have (ID and event application).
     /// </summary>
-    public partial class Aggregate 
+    public class Aggregate 
     {
+        private readonly IDbContext _dbContext;
+        public Aggregate(IDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
         /// <summary>
         /// The number of events loaded into this aggregate.
         /// </summary>
@@ -51,5 +57,11 @@ namespace PinoyCode.Cqrs
             applier.Apply(ev);
             EventsLoaded++;
         }
+
+        public IDbContext GetContext()
+        {
+            return _dbContext;
+        }
+
     }
 }

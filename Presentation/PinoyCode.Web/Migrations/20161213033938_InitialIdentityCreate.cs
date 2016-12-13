@@ -24,6 +24,68 @@ namespace PinoyCode.Web.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Aggregates",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    AggregateType = table.Column<string>(nullable: true),
+                    CommitDateTime = table.Column<DateTime>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Aggregates", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AdPosts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    CreatedById = table.Column<int>(nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(nullable: false),
+                    Description = table.Column<string>(maxLength: 4000, nullable: true),
+                    Disabled = table.Column<bool>(nullable: false),
+                    Order = table.Column<int>(nullable: false),
+                    Price = table.Column<double>(nullable: false),
+                    Title = table.Column<string>(maxLength: 256, nullable: true),
+                    Type = table.Column<int>(nullable: false),
+                    UpdatedById = table.Column<int>(nullable: true),
+                    UpdatedOnUtc = table.Column<DateTime>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdPosts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Categories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    CreatedById = table.Column<int>(nullable: true),
+                    CreatedOnUtc = table.Column<DateTime>(nullable: false),
+                    Description = table.Column<string>(maxLength: 4000, nullable: true),
+                    Disabled = table.Column<bool>(nullable: false),
+                    Order = table.Column<int>(nullable: false),
+                    ParentId = table.Column<int>(nullable: true),
+                    Title = table.Column<string>(maxLength: 256, nullable: true),
+                    UpdatedById = table.Column<int>(nullable: true),
+                    UpdatedOnUtc = table.Column<DateTime>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Categories_Categories_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Roles",
                 columns: table => new
                 {
@@ -62,6 +124,70 @@ namespace PinoyCode.Web.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Users", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Events",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    AggregateId = table.Column<Guid>(nullable: false),
+                    Body = table.Column<string>(nullable: true),
+                    CommitDateTime = table.Column<DateTime>(nullable: false),
+                    SequenceNumber = table.Column<int>(nullable: false),
+                    Type = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Events", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Events_Aggregates_AggregateId",
+                        column: x => x.AggregateId,
+                        principalTable: "Aggregates",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AdPostImages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    AdPostId = table.Column<int>(nullable: false),
+                    ImageData = table.Column<byte[]>(nullable: true),
+                    ImageName = table.Column<string>(maxLength: 256, nullable: true),
+                    ImageType = table.Column<string>(maxLength: 32, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AdPostImages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AdPostImages_AdPosts_AdPostId",
+                        column: x => x.AdPostId,
+                        principalTable: "AdPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "FeaturedAds",
+                columns: table => new
+                {
+                    PostId = table.Column<int>(nullable: false),
+                    ExpiredOnUtc = table.Column<DateTime>(nullable: false),
+                    FeaturedById = table.Column<int>(nullable: true),
+                    FeaturedOnUtc = table.Column<DateTime>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_FeaturedAds", x => x.PostId);
+                    table.ForeignKey(
+                        name: "FK_FeaturedAds_AdPosts_PostId",
+                        column: x => x.PostId,
+                        principalTable: "AdPosts",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -171,6 +297,26 @@ namespace PinoyCode.Web.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Events_AggregateId",
+                table: "Events",
+                column: "AggregateId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AdPostImages_AdPostId",
+                table: "AdPostImages",
+                column: "AdPostId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Categories_ParentId",
+                table: "Categories",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_FeaturedAds_PostId",
+                table: "FeaturedAds",
+                column: "PostId");
+
+            migrationBuilder.CreateIndex(
                 name: "RoleNameIndex",
                 table: "Roles",
                 column: "NormalizedName",
@@ -206,10 +352,28 @@ namespace PinoyCode.Web.Migrations
                 name: "UserTokens");
 
             migrationBuilder.DropTable(
+                name: "Events");
+
+            migrationBuilder.DropTable(
+                name: "AdPostImages");
+
+            migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
+                name: "FeaturedAds");
+
+            migrationBuilder.DropTable(
                 name: "Roles");
 
             migrationBuilder.DropTable(
                 name: "Users");
+
+            migrationBuilder.DropTable(
+                name: "Aggregates");
+
+            migrationBuilder.DropTable(
+                name: "AdPosts");
         }
     }
 }

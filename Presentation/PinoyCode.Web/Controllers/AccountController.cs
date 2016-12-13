@@ -1,18 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using PinoyCode.Web.Models;
+using PinoyCode.Cqrs;
+using PinoyCode.Data.Infrustracture;
+using PinoyCode.Domain.Identity;
+using PinoyCode.Domain.Identity.Commands;
+using PinoyCode.Domain.Identity.Handlers;
+using PinoyCode.Domain.Identity.Models;
 using PinoyCode.Web.Models.AccountViewModels;
 using PinoyCode.Web.Services;
-using PinoyCode.Domain.Identity;
-using PinoyCode.Domain.Identity.Models;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace PinoyCode.Web.Controllers
 {
@@ -21,22 +22,32 @@ namespace PinoyCode.Web.Controllers
     {
         private readonly IUserManager _userManager;
         private readonly ISignInManager _signInManager;
+        private readonly IDbContext _context;
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
-
+        private readonly IMessageDispatcher _dispatcher;
+       
         public AccountController(
             IUserManager userManager,
             ISignInManager signInManager,
+            IDbContext context,
             IEmailSender emailSender,
             ISmsSender smsSender,
+            IMessageDispatcher dispatcher,
             ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
             _emailSender = emailSender;
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
+            _dispatcher = dispatcher;
+            
+
+
+            _dispatcher.ScanInstance(new IdentityAggregate(_context));
         }
 
         //
@@ -105,23 +116,40 @@ namespace PinoyCode.Web.Controllers
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+
             if (ModelState.IsValid)
             {
-                var user = new User { FirstName=model.FirstName, LastName= model.LastName, UserName = model.Email, Email = model.Email };
-                var result = await _userManager.CreateAsync(user, model.Password);
-                if (result.Succeeded)
+
+                var @command = new CreateUserCommand
                 {
-                    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                    // Send an email with this link
-                    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-                    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
-                    //    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation(3, "User created a new account with password.");
-                    return RedirectToLocal(returnUrl);
-                }
-                AddErrors(result);
+                    Password = model.Password,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    UserName = model.Email,
+                    Email = model.Email
+                };
+
+                //var user = new User { FirstName=model.FirstName, LastName= model.LastName, UserName = model.Email, Email = model.Email };
+
+                _dispatcher.SendCommand(@command);
+
+                await Task.FromResult<IActionResult>(null);
+
+
+                //var result = await _userManager.CreateAsync(user, model.Password);
+                //if (result.Succeeded)
+                //{
+                //    // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                //    // Send an email with this link
+                //    //var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                //    //var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
+                //    //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
+                //    //    $"Please confirm your account by clicking this link: <a href='{callbackUrl}'>link</a>");
+                //    await _signInManager.SignInAsync(user, isPersistent: false);
+                //    _logger.LogInformation(3, "User created a new account with password.");
+                //    return RedirectToLocal(returnUrl);
+                //}
+                //AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form

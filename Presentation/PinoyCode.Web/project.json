@@ -1,4 +1,4 @@
-﻿{
+{
   "userSecretsId": "aspnet-PinoyCode.Web-2fbb4adb-c3ce-4ce5-bca3-575e4c4e0f94",
 
   "dependencies": {
@@ -51,7 +51,9 @@
       "version": "1.1.0",
       "type": "platform"
     },
-    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0"
+    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0",
+    "PinoyCode.Domain.Ads": "1.0.0-*",
+    "PinoyCode.Data": "1.0.0-*"
   },
 
   "tools": {

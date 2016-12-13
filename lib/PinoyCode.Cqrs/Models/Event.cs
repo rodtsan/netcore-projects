@@ -1,15 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PinoyCode.Cqrs.Models
 {
     public class Event
     {
+        [Key, Required]
         public Guid Id { get; set; }
         public string Type { get; set; }
         public string Body { get; set; }
+        [Required]
         public DateTime CommitDateTime { get; set; }
         public int SequenceNumber { get; set; }
         public Guid AggregateId { get; set; }

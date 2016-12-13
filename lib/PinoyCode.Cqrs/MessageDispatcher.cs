@@ -19,16 +19,16 @@ namespace PinoyCode.Cqrs
             new Dictionary<Type, Action<object>>();      
         private Dictionary<Type, List<Action<object>>> eventSubscribers =
             new Dictionary<Type, List<Action<object>>>();
-        private IEventStore eventStore;
-
+        private readonly IEventStore _eventStore;
+      
         /// <summary>
         /// Initializes a message dispatcher, which will use the specified event store
         /// implementation.
         /// </summary>
         /// <param name="es"></param>
-        public MessageDispatcher(IEventStore es)
+        public MessageDispatcher(IEventStore eventStore)
         {
-            eventStore = es;
+            _eventStore = eventStore;
         }
 
         /// <summary>
@@ -64,35 +64,36 @@ namespace PinoyCode.Cqrs
         /// <typeparam name="TAggregate"></typeparam>
         /// <param name="handler"></param>
         public void AddHandlerFor<TCommand, TAggregate>()
-            where TAggregate : Aggregate, new()
+            where TAggregate : Aggregate
         {
             if (commandHandlers.ContainsKey(typeof(TCommand)))
                 throw new Exception("Command handler already registered for " + typeof(TCommand).Name);
-            
-            commandHandlers.Add(typeof(TCommand), c =>
+
+            commandHandlers.Add(typeof(TCommand), (Action<object>)(c =>
                 {
                     // Create an empty aggregate.
-                    var agg = Activator.CreateInstance<TAggregate>();
+                    var agg = (TAggregate)Activator.CreateInstance(typeof(TAggregate), _eventStore.Context);
 
+                    
                     // Load the aggregate with events.
                     agg.Id = ((dynamic)c).Id;
-                    agg.ApplyEvents(eventStore.LoadEventsFor<TAggregate>(agg.Id));
+                    agg.ApplyEvents(_eventStore.LoadEventsFor<TAggregate>(agg.Id));
                     
                     // With everything set up, we invoke the command handler, collecting the
                     // events that it produces.
                     var resultEvents = new ArrayList();
-                    foreach (var e in (agg as IHandleCommand<TCommand>).Handle((TCommand)c))
+                    foreach (var e in (agg as IHandleCommand<TCommand>).Handle((TCommand)(TCommand)c))
                         resultEvents.Add(e);
                     
                     // Store the events in the event store.
                     if (resultEvents.Count > 0)
-                        eventStore.SaveEventsFor<TAggregate>(agg.Id,
+                        _eventStore.SaveEventsFor<TAggregate>(agg.Id,
                             agg.EventsLoaded, resultEvents);
 
                     // Publish them to all subscribers.
                     foreach (var e in resultEvents)
                         PublishEvent(e);
-                });
+                }));
         }
 
         /// <summary>
