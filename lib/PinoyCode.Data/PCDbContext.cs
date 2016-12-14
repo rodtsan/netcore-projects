@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PinoyCode.Data.Infrustracture;
 using System.Threading.Tasks;
+using System;
 
 namespace PinoyCode.Data
 {
@@ -40,5 +41,9 @@ namespace PinoyCode.Data
             return this.Set<T>();
         }
 
+        public T GetService<T>()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

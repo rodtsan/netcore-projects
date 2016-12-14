@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using PinoyCode.Cqrs.Models;
 using PinoyCode.Data.Infrustracture;
 using PinoyCode.Domain.Ads.Models;
+using PinoyCode.Domain.Identity;
 using PinoyCode.Domain.Identity.Models;
 using System;
 using System.Linq;
@@ -13,16 +15,16 @@ namespace PinoyCode.Domain.Ads
 {
     public class AdsDbContext : IdentityDbContext<User, Role, Guid>, IDbContext
     {
-        public AdsDbContext(DbContextOptions<AdsDbContext> options)
+        private readonly IServiceProvider _serviceProvider;
+        public AdsDbContext(IServiceProvider serviceProvider, DbContextOptions<AdsDbContext> options)
             :base(options)
         {
-            
+            _serviceProvider = serviceProvider;
         }
 
         public DbSet<AdPost> Posts { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<AdPostImage> Images { get; set; }
-
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -131,5 +133,11 @@ namespace PinoyCode.Domain.Ads
             return await base.SaveChangesAsync();
         }
 
+        public T GetService<T>()
+        {
+            return (T)_serviceProvider.GetService(typeof(T));
+        }
+
+     
     }
 }

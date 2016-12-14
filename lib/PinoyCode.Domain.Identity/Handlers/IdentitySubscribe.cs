@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 namespace PinoyCode.Domain.Identity.Handlers
 {
     public class IdentitySubscribe : IIdentitySubscribe
-        , ISubscribeTo<UserHasBeenCreated>
-        , ISubscribeTo<UserSignedIn>
+        , ISubscribeTo<CreateUserCommand>
+        , ISubscribeTo<UserSignInCommand>
     {
 
         private readonly IUserManager _userManager;
@@ -27,14 +27,14 @@ namespace PinoyCode.Domain.Identity.Handlers
             _logger = logger;
         }
 
-        public void Handle(UserSignedIn e)
+        public void Handle(CreateUserCommand e)
         {
-            e.SignedIn = true;
+           
         }
 
-        public void Handle(UserHasBeenCreated e)
+        public void Handle(UserSignInCommand e)
         {
-            e.Succeeded = true;
+          
         }
     }
 

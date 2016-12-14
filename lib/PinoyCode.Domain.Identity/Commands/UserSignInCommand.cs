@@ -6,7 +6,6 @@ namespace PinoyCode.Domain.Identity.Commands
     public class UserSignInCommand 
     {
         public Guid Id;
-        public User User;
         public string Message;
         public bool SignedIn;
     }

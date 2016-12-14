@@ -73,7 +73,7 @@ namespace PinoyCode.Cqrs
                 {
                     // Create an empty aggregate.
                     var agg = (TAggregate)Activator.CreateInstance(typeof(TAggregate), _eventStore.Context);
-
+                   // agg.Id = (Guid)agg.GetType().GetMethod("GetAggregateId").Invoke(agg, new object[] { });
                     
                     // Load the aggregate with events.
                     agg.Id = ((dynamic)c).Id;

@@ -12,6 +12,8 @@ namespace PinoyCode.Domain.Identity.Commands
         public string UserName;
         public string Message;
         public bool Succeeded;
+        public bool SignedIn;
+        public bool HasError;
     
     }
 }

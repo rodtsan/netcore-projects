@@ -10,7 +10,6 @@ namespace PinoyCode.Domain.Identity.Events
     public class UserHasBeenCreated
     {
         public Guid Id;
-        public User User;
         public bool Succeeded;
         
     }

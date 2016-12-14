@@ -18,6 +18,8 @@ namespace PinoyCode.Cqrs
         public Aggregate(IDbContext dbContext)
         {
             _dbContext = dbContext;
+
+           
         }
         /// <summary>
         /// The number of events loaded into this aggregate.
@@ -58,10 +60,17 @@ namespace PinoyCode.Cqrs
             EventsLoaded++;
         }
 
-        public IDbContext GetContext()
+       public IDbContext Context
         {
-            return _dbContext;
+            get
+            {
+                return _dbContext;
+            }
         }
 
+        public T GetService<T>()
+        {
+            return _dbContext.GetService<T>();
+        }
     }
 }

@@ -8,7 +8,9 @@ using PinoyCode.Cqrs;
 using PinoyCode.Data.Infrustracture;
 using PinoyCode.Domain.Ads;
 using PinoyCode.Domain.Identity;
+using PinoyCode.Domain.Identity.Handlers;
 using PinoyCode.Domain.Identity.Models;
+using PinoyCode.Web.Controllers;
 using PinoyCode.Web.Services;
 using System;
 
@@ -66,8 +68,8 @@ namespace PinoyCode.Web
             services.AddTransient<IDbContext, AdsDbContext>();
             services.AddTransient<IEventStore, SqlEventStore>();
             services.AddTransient<IMessageDispatcher , MessageDispatcher>();
-            
-       
+      
+
             services.AddTransient<IUserManager, UserManager>();
             services.AddTransient<ISignInManager, SignInManager>();
 
@@ -85,14 +87,20 @@ namespace PinoyCode.Web
 
             app.UseApplicationInsightsRequestTelemetry();
 
-          
-            //app.ApplicationServices.GetRequiredService<IMessageDispatcher>()
-            //    .ScanInstance(new IdentityAggregate {
-            //         ServiceProvider = app.ApplicationServices
-            //    });
+
+            //using (var db = app.ApplicationServices.GetService<IDbContext>())
+            //{
+            //    app.ApplicationServices.GetService<IMessageDispatcher>()
+            //       .ScanInstance(new IdentityAggregate(db) {
+            //            UserManager = app.ApplicationServices.GetService<IUserManager>(),
+            //            SignInManager = app.ApplicationServices.GetService<ISignInManager>()
+            //       });
+            //}
+
                 
 
-                if (env.IsDevelopment())
+
+            if (env.IsDevelopment())
                 {
                     app.UseDeveloperExceptionPage();
                     app.UseDatabaseErrorPage();

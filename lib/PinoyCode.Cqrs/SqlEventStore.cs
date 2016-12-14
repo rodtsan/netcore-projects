@@ -5,7 +5,7 @@ using System.Collections;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using PinoyCode.Data.Extensions;
 using System.Xml.Serialization;
 using CqrsModels = PinoyCode.Cqrs.Models;
 
@@ -43,23 +43,27 @@ namespace PinoyCode.Cqrs
 
         public void SaveEventsFor<TAggregate>(Guid? aggregateId, int eventsLoaded, ArrayList newEvents)
         {
-            var aggregate = new CqrsModels.Aggregate
+            var aggregate = this.Aggregates.Find(aggregateId.Value);
+            if (aggregate == null)
             {
-                Id = aggregateId.Value,
-                AggregateType = typeof(TAggregate).AssemblyQualifiedName,
-                CommitDateTime = DateTime.UtcNow
-            };
-            this.Aggregates.Add(aggregate);
+                aggregate = new CqrsModels.Aggregate
+                {
+                    Id = aggregateId.Value,
+                    AggregateType = typeof(TAggregate).AssemblyQualifiedName,
+                    CommitDateTime = DateTime.UtcNow
+                };
 
-            
-            for(int i = 0; i < newEvents.Count; i++)
+                Aggregates.Add(aggregate);
+            }
+
+            for (int i = 0; i < newEvents.Count; i++)
             {
                 var e = newEvents[i];
                 eventsLoaded = eventsLoaded + i;
-                this.Events.Add(new CqrsModels.Event
+                Events.Add(new CqrsModels.Event
                 {
                     Id = Guid.NewGuid(),
-                    AggregateId = aggregateId.Value,
+                    AggregateId = aggregate.Id,
                     SequenceNumber = eventsLoaded,
                     Type = e.GetType().AssemblyQualifiedName,
                     Body = SerializeEvent(e),
@@ -67,7 +71,10 @@ namespace PinoyCode.Cqrs
                 });
             }
 
-            this._context.Commit();
+            
+
+            _context.Commit();
+
         }
 
         private string SerializeEvent(object obj)
