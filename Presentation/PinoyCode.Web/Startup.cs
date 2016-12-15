@@ -1,18 +1,24 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using PinoyCode.Cqrs;
 using PinoyCode.Data.Infrustracture;
 using PinoyCode.Domain.Ads;
+using PinoyCode.Domain.Ads.Repositories;
 using PinoyCode.Domain.Identity;
 using PinoyCode.Domain.Identity.Handlers;
 using PinoyCode.Domain.Identity.Models;
 using PinoyCode.Web.Controllers;
 using PinoyCode.Web.Services;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace PinoyCode.Web
 {
@@ -52,12 +58,13 @@ namespace PinoyCode.Web
                      c => c.MigrationsAssembly("PinoyCode.Web"))
                     , ServiceLifetime.Scoped);
 
-            services.AddIdentity<User, Role>(options => {
-                    options.Password.RequireUppercase = false;
-                    options.Password.RequiredLength = 5;
-                    options.Password.RequireNonAlphanumeric = false;
-                    options.Password.RequireDigit = false;
-                })
+            services.AddIdentity<User, Role>(options =>
+            {
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 5;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireDigit = false;
+            })
                 .AddEntityFrameworkStores<AdsDbContext, Guid>()
                 .AddDefaultTokenProviders();
 
@@ -67,8 +74,9 @@ namespace PinoyCode.Web
             // Add application services.
             services.AddTransient<IDbContext, AdsDbContext>();
             services.AddTransient<IEventStore, SqlEventStore>();
-            services.AddTransient<IMessageDispatcher , MessageDispatcher>();
-      
+            services.AddTransient<IMessageDispatcher, MessageDispatcher>();
+            services.AddTransient<IAdsBusinessObject, AdsBusinessObject>();
+
 
             services.AddTransient<IUserManager, UserManager>();
             services.AddTransient<ISignInManager, SignInManager>();
@@ -76,7 +84,7 @@ namespace PinoyCode.Web
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
-       
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -87,44 +95,53 @@ namespace PinoyCode.Web
 
             app.UseApplicationInsightsRequestTelemetry();
 
-
-            //using (var db = app.ApplicationServices.GetService<IDbContext>())
-            //{
-            //    app.ApplicationServices.GetService<IMessageDispatcher>()
-            //       .ScanInstance(new IdentityAggregate(db) {
-            //            UserManager = app.ApplicationServices.GetService<IUserManager>(),
-            //            SignInManager = app.ApplicationServices.GetService<ISignInManager>()
-            //       });
-            //}
-
-                
-
-
             if (env.IsDevelopment())
-                {
-                    app.UseDeveloperExceptionPage();
-                    app.UseDatabaseErrorPage();
-                    app.UseBrowserLink();
-                }
-                else
-                {
-                    app.UseExceptionHandler("/Home/Error");
-                }
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseDatabaseErrorPage();
+                app.UseBrowserLink();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+            }
 
-            app.UseApplicationInsightsExceptionTelemetry();
+            //IFileProvider fileProvider = new PhysicalFileProvider(
+            //    Path.Combine(Directory.GetCurrentDirectory(), @"Static"));
+            //PathString requestPath = new PathString("/classified-ads");
+
+            //app.UseDefaultFiles(new DefaultFilesOptions()
+            //{
+            //    DefaultFileNames = new string[] { "default.html", "default.htm", "index.html", "index.htm" },
+            //    FileProvider = fileProvider,
+            //    RequestPath = requestPath
+            //});
+
+            //app.UseStaticFiles(new StaticFileOptions()
+            //{ 
+            //    FileProvider = fileProvider,
+            //    RequestPath = requestPath
+            //});
+
 
             app.UseStaticFiles();
 
             app.UseIdentity();
 
             // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+
+            //app.Run(ctx =>
+            //{
+            //    ctx.Response.Redirect("/classified-ads");
+            //    return Task.FromResult(0);
+            //});
         }
     }
 }

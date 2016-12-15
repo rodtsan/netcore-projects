@@ -1,0 +1,71 @@
+﻿@using System.Linq
+@using PinoyCode.Data
+@using PinoyCode.Domain.Ads.Models
+@model PagedList<Category>
+@{
+    ViewData["Title"] = "Ads Categories";
+}
+<h2>@ViewData["Title"].</h2>
+<h3>@ViewData["Message"]</h3>
+<form asp-controller="Category" asp-action="Index" method="post">
+    <div class="panel">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-md-offset-4 col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" aria-label="...">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action <span class="caret"></span></button>
+                            <ul class="dropdown-menu dropdown-menu-right">
+                                <li><a href="#">Action</a></li>
+                                <li><a href="#">Another action</a></li>
+                                <li><a href="#">Something else here</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a href="#">Separated link</a></li>
+                            </ul>
+                        </div><!-- /btn-group -->
+                    </div><!-- /input-group -->
+                </div>
+            </div>
+        </div>
+        <div class="panel-body form-horizontal">
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Sub</th>
+                        <th>Created On</th>
+                        <th>Created By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.RecordCount > 0)
+                    {
+
+                        @foreach (var t in Model.Items)
+                        {
+                                <tr>
+                                    <th>@t.Id</th>
+                                    <td>@t.Title</td>
+                                    <td>@t.Description</td>
+                                    <td>Categories(@(t.Categories?.Count())) <a asp-action="Create/@t.Id" asp-controller="Category">Add</a></td>
+                                    <td>@t.CreatedOnUtc.ToString("dd-MM-yyyy")</td>
+                                    <td>@t.CreatedById</td>
+                                </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <th colspan="6">No records available.</th>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <input type="hidden" asp-for="PageIndex" />
+            <input type="hidden" asp-for="PageSize" />
+        </div>
+    </div>
+</form>

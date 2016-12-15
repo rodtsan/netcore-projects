@@ -8,13 +8,13 @@ namespace PinoyCode.Data.Infrustracture
 
     public class EFRepository<T> : IEFRepository<T> where T : class, new()
     {
-        private readonly IDbContext _content;
+        private readonly IDbContext _dbContext;
         public EFRepository(IDbContext content)
         {
-            this._content = content;
+            this._dbContext = content;
         }
 
-        public virtual T GetById(object Id)
+        public T GetById(object Id)
         {
             return this.Table.Find(Id);
         }
@@ -24,7 +24,7 @@ namespace PinoyCode.Data.Infrustracture
             return await this.Table.FindAsync(Id);
         }
 
-        public virtual void Add(T entity)
+        public void Add(T entity)
         {
             if (entity == null)
                 throw new ArgumentNullException("entity");
@@ -40,35 +40,18 @@ namespace PinoyCode.Data.Infrustracture
             await this.Table.AddAsync(entity);
         }
 
-        public virtual void Update(T entity)
+        public void Update(T entity)
         {
             this.Table.Update(entity);
         }
 
-        public async Task UpdateAsync(T entity)
-        {
-            await Task.Run(() =>
-            {
-                this.Table.Update(entity);
-            });
 
-        }
-
-        public virtual void Delete(T entity)
+        public void Delete(T entity)
         {
             this.Table.Remove(entity);
         }
 
-        public async Task DeleteAsync(T entity)
-        {
-            await Task.Run(() =>
-            {
-                this.Table.Remove(entity);
-            });
-
-        }
-
-        public virtual IQueryable<T> QueryAsTracking
+        public IQueryable<T> TableTracking
         {
             get
             {
@@ -76,7 +59,7 @@ namespace PinoyCode.Data.Infrustracture
             }
         }
 
-        public virtual IQueryable<T> QueryAsNoTracking
+        public IQueryable<T> TableNoTracking
         {
             get
             {
@@ -84,19 +67,19 @@ namespace PinoyCode.Data.Infrustracture
             }
         }
 
-        protected virtual DbSet<T> Table
+        private DbSet<T> Table
         {
             get
             {
-                return this._content.Table<T>();
+                return this._dbContext.Table<T>();
             }
         }
 
-        protected int Commit()
+        private int Commit()
         {
             try
             {
-                return this._content.Commit();
+                return this._dbContext.Commit();
             }
             catch (DbUpdateConcurrencyException dbEx)
             {
@@ -112,27 +95,25 @@ namespace PinoyCode.Data.Infrustracture
             }
         }
 
-        protected async Task<int> CommitAsync()
+        private async Task<int> CommitAsync()
         {
-            return await Task<int>.Run(() =>
+
+            try
             {
-                try
-                {
-                    return this._content.CommitAsync();
-                }
-                catch (DbUpdateConcurrencyException dbEx)
-                {
-                    throw new Exception("Database Concurrency error while trying to save changes: ", dbEx);
-                }
-                catch (DbUpdateException dbEx)
-                {
-                    throw new Exception("Database error while trying to save changes: ", dbEx);
-                }
-                catch (Exception dbEx)
-                {
-                    throw new Exception("Database general error while trying to save changes: ", dbEx);
-                }
-            });
+                return await this._dbContext.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException dbEx)
+            {
+                throw new Exception("Database Concurrency error while trying to save changes: ", dbEx);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                throw new Exception("Database error while trying to save changes: ", dbEx);
+            }
+            catch (Exception dbEx)
+            {
+                throw new Exception("Database general error while trying to save changes: ", dbEx);
+            }
 
         }
 

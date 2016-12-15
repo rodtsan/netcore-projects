@@ -20,6 +20,13 @@ namespace PinoyCode.Domain.Ads.Models
         public virtual Category Parent { get; set; }
         public int? ParentId { get; set; }
         public virtual ICollection<Category> Categories { get; set; }
+        [NotMapped]
+        public int? ChildCount {
+            get
+            {
+                return Categories?.Count();
+            }
+        }
         public int Order { get; set; }
         public int? UpdatedById { get; set; }
         public DateTime? UpdatedOnUtc { get; set; }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PinoyCode.Data.Infrastructure;
 using System;
 using System.Threading.Tasks;
 
@@ -10,6 +11,5 @@ namespace PinoyCode.Data.Infrustracture
         int Commit();
         Task<int> CommitAsync();
         T GetService<T>();
-       
     }
 }

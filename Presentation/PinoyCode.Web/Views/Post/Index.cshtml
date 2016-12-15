@@ -1,0 +1,48 @@
+﻿@using System.Linq
+@using PinoyCode.Data
+@using PinoyCode.Domain.Ads.Models
+@model PagedList<AdPost>
+@{
+    ViewData["Title"] = "Posted Ads";
+}
+<h2>@ViewData["Title"].</h2>
+<h3>@ViewData["Message"]</h3>
+<form asp-controller="Ads" asp-action="Index" method="post" class="form-horizontal">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Featured/Expires</th>
+                <th>Created On</th>
+                <th>Created By</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.RecordCount > 0)
+            {
+
+                @foreach (var t in Model.Items)
+                {
+                    <tr>
+                        <th>@t.Id</th>
+                        <td>@t.Title</td>
+                        <td>@t.Description</td>
+                        <td>@(t.FeaturedAd?.ExpiredOnUtc.ToString("MM/dd/yyyy"))</td>
+                        <td>@t.CreatedOnUtc</td>
+                        <td>@t.CreatedById</td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>    
+                    <th colspan="6">No records available.</th>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <input type="hidden" asp-for="PageIndex" />
+    <input type="hidden" asp-for="PageSize" />
+</form>
